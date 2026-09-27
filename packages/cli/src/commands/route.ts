@@ -7,7 +7,7 @@
  * the model.
  */
 
-import { API_KEY_ENV, resolveApiKey, resolveConfig, route } from "../core/index.js";
+import { API_KEY_ENV, resolveProvider, providerKeyEnv, resolveApiKey, resolveConfig, route } from "../core/index.js";
 import type { DegradedReason, RouteResult, SkipReason } from "../core/index.js";
 import { scanCatalog } from "../core/index.js";
 
@@ -21,12 +21,12 @@ export interface RouteCommandOptions {
 }
 
 const DEGRADED_ADVICE: Record<DegradedReason, string> = {
-  auth: `The API key was rejected. Check that ${API_KEY_ENV} holds a current key.`,
-  config: `No API key found. Export ${API_KEY_ENV} before routing.`,
-  network: "The request never reached TypeSafe. Check connectivity and retry.",
+  auth: `The API key was rejected. Check that the relevant key env var holds a current key.`,
+  config: `No API key found. Export TYPESAFE_API_KEY (or OPENJEV_API_KEY) before routing.`,
+  network: "The request never reached the API. Check connectivity and retry.",
   timeout: "Routing exceeded its budget. Raise budgetMs or lower requestTimeoutMs.",
-  upstream: "TypeSafe returned an error. This is usually transient.",
-  malformed: "TypeSafe returned a body this client could not read.",
+  upstream: "The API returned an error. This is usually transient.",
+  malformed: "The API returned a body this client could not read.",
 };
 
 const SKIP_EXPLANATION: Record<SkipReason, string> = {
@@ -68,8 +68,9 @@ export async function routeCommand(options: RouteCommandOptions): Promise<number
   // A missing key is reported up front rather than after a scan, because the scan is the
   // slow part and the user can fix a missing key without rerunning anything.
   if (apiKey === undefined && options.json !== true) {
+    const keyEnv = providerKeyEnv(resolveProvider(process.env));
     process.stderr.write(
-      `warning: ${API_KEY_ENV} is not set, so routing can only report a degraded result.\n`,
+      `warning: ${keyEnv} is not set, so routing can only report a degraded result.\n`,
     );
   }
 

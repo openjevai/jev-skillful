@@ -68,7 +68,11 @@ Global:
 
 Environment:
   TYPESAFE_API_KEY             TypeSafe API key. Read only from the environment.
+  OPENJEV_API_KEY              OpenJEV API key (alternative gateway). Set JEV_PROVIDER=openjev to use it,
+                               or set only this key when no TypeSafe key is present.
+  JEV_PROVIDER                 Explicit provider choice: "typesafe" (default) or "openjev".
   SKILLFUL_MODEL               Override the model
+  SKILLFUL_BASE_URL            Override the API base URL
   SKILLFUL_BUDGET_MS           Override the routing budget in milliseconds
   SKILLFUL_UPLOAD_PROMPT       Set to false to never transmit prompt text
   AGENTKIT_CODEX_SKILLS_ROOT   Override the shared Codex/agents skills root

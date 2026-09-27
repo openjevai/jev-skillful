@@ -19,6 +19,7 @@
 
 import type { Catalog, CatalogEntry } from "../catalog/types.js";
 import { resolveConfig, type ResolvedConfig } from "../config/resolve.js";
+import { resolveProvider, providerKeyEnv } from "../jev/types.js";
 import { route, type RouteResult } from "../router/route.js";
 import { eventsPath, type PathContext } from "../telemetry/paths.js";
 import { buildRouteEvent, isTelemetryDisabled, writeEvent } from "../telemetry/writer.js";
@@ -144,7 +145,8 @@ export async function runHook(input: HookInput, deps: HookDeps): Promise<HookOut
 
     // A missing key is the expected state for a user who has not set one up, so it degrades
     // quietly instead of erroring. The reminder text tells them what to run.
-    const apiKey = deps.env["TYPESAFE_API_KEY"];
+    const provider = resolveProvider(deps.env);
+    const apiKey = deps.env[providerKeyEnv(provider)];
     if (apiKey === undefined || apiKey.trim().length === 0) {
       return {
         payload: injectionPayload(event, DEGRADED_REMINDER),

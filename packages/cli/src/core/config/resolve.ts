@@ -10,7 +10,7 @@
 
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { DEFAULT_BASE_URL, DEFAULT_MODEL } from "../jev/types.js";
+import { DEFAULT_BASE_URL, DEFAULT_MODEL, resolveProvider, providerBaseUrl, providerModel } from "../jev/types.js";
 import { DEFAULT_QUOTA_GROUPS, type QuotaGroup } from "../retrieval/shortlist.js";
 import { DEFAULT_THRESHOLDS, type RouteThresholds } from "../router/thresholds.js";
 
@@ -197,11 +197,13 @@ export function resolveConfig(input: ResolveConfigInput = {}): ResolvedConfig {
     requestTimeoutMs: threshold("requestTimeoutMs"),
   };
 
+  const provider = resolveProvider(env);
+
   const model =
     input.cli?.model ??
     env[ENV_KEYS.model]?.trim() ??
     (typeof file.model === "string" ? file.model : undefined) ??
-    DEFAULT_MODEL;
+    providerModel(provider);
   sources["model"] = input.cli?.model !== undefined
     ? "cli"
     : env[ENV_KEYS.model] !== undefined
@@ -214,7 +216,7 @@ export function resolveConfig(input: ResolveConfigInput = {}): ResolvedConfig {
     input.cli?.baseUrl ??
     env[ENV_KEYS.baseUrl]?.trim() ??
     (typeof file.baseUrl === "string" ? file.baseUrl : undefined) ??
-    DEFAULT_BASE_URL;
+    providerBaseUrl(provider);
   sources["baseUrl"] = input.cli?.baseUrl !== undefined
     ? "cli"
     : env[ENV_KEYS.baseUrl] !== undefined

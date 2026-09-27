@@ -48,7 +48,8 @@ export type {
 // ---------------------------------------------------------------------------
 export { callSystemOne, JevError, resolveApiKey } from "./jev/client.js";
 export type { JevClientOptions, JevErrorCode } from "./jev/client.js";
-export { API_KEY_ENV, DEFAULT_BASE_URL, DEFAULT_MODEL } from "./jev/types.js";
+export { API_KEY_ENV, DEFAULT_BASE_URL, DEFAULT_MODEL, OPENJEV_BASE_URL, OPENJEV_MODEL, OPENJEV_API_KEY_ENV, PROVIDER_ENV, resolveProvider, providerBaseUrl, providerModel, providerKeyEnv } from "./jev/types.js";
+export type { JevProvider } from "./jev/types.js";
 export type {
   Answer,
   ChoiceAnswer,

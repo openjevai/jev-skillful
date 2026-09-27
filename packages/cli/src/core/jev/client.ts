@@ -11,6 +11,10 @@ import {
   API_KEY_ENV,
   DEFAULT_BASE_URL,
   DEFAULT_MODEL,
+  resolveProvider,
+  providerBaseUrl,
+  providerModel,
+  providerKeyEnv,
   type SystemOneRequest,
   type SystemOneResponse,
 } from "./types.js";
@@ -60,8 +64,8 @@ const DEFAULT_REQUEST_TIMEOUT_MS = 1800;
 const DEFAULT_MAX_RETRIES = 2;
 const DEFAULT_RETRY_BASE_DELAY_MS = 250;
 
-/** Statuses worth retrying: rate limit and upstream overload. 401 and 422 are not. */
-const RETRYABLE_STATUSES: ReadonlySet<number> = new Set([429, 529]);
+/** Statuses worth retrying: rate limit, upstream overload, and OpenJEV 503. 401 and 422 are not. */
+const RETRYABLE_STATUSES: ReadonlySet<number> = new Set([429, 503, 529]);
 
 function defaultSleep(ms: number): Promise<void> {
   return new Promise((resolve) => {
@@ -86,7 +90,9 @@ export function resolveApiKey(options: JevClientOptions = {}): string | undefine
   if (fromOption !== undefined && fromOption.length > 0) return fromOption;
 
   const env = options.env ?? process.env;
-  const fromEnv = env[API_KEY_ENV]?.trim();
+  const provider = resolveProvider(env);
+  const keyEnv = providerKeyEnv(provider);
+  const fromEnv = env[keyEnv]?.trim();
   if (fromEnv !== undefined && fromEnv.length > 0) return fromEnv;
 
   return undefined;
@@ -133,12 +139,15 @@ export async function callSystemOne(
   }
 
   const sleep = options.sleepImpl ?? defaultSleep;
-  const url = options.baseUrl ?? DEFAULT_BASE_URL;
+  const env = options.env ?? process.env;
+  const provider = resolveProvider(env);
+  const url = options.baseUrl ?? providerBaseUrl(provider);
   const timeoutMs = options.requestTimeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS;
   const maxRetries = options.maxRetries ?? DEFAULT_MAX_RETRIES;
   const baseDelay = options.retryBaseDelayMs ?? DEFAULT_RETRY_BASE_DELAY_MS;
 
-  const body = JSON.stringify({ ...request, model: request.model || DEFAULT_MODEL });
+  const defaultModel = providerModel(provider);
+  const body = JSON.stringify({ ...request, model: request.model || defaultModel });
 
   const externalSignal = options.signal;
   let lastError: JevError | undefined;

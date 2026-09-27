@@ -60,6 +60,61 @@ export const DEFAULT_BASE_URL = "https://api.typesafe.ai/v1/systemone";
 /** Environment variable read for the API key. Never accepted as a CLI flag. */
 export const API_KEY_ENV = "TYPESAFE_API_KEY";
 
+// ---------------------------------------------------------------------------
+// OpenJEV — community gateway to the same Jev model (additive, TypeSafe stays default)
+// ---------------------------------------------------------------------------
+
+/** OpenJEV API endpoint. */
+export const OPENJEV_BASE_URL = "https://api.openjev.sh/v1/systemone";
+
+/** Model id on the OpenJEV gateway. */
+export const OPENJEV_MODEL = "openjev";
+
+/** Environment variable for the OpenJEV API key. */
+export const OPENJEV_API_KEY_ENV = "OPENJEV_API_KEY";
+
+/** Environment variable for explicit provider selection (`typesafe` or `openjev`). */
+export const PROVIDER_ENV = "JEV_PROVIDER";
+
+export type JevProvider = "typesafe" | "openjev";
+
+/**
+ * Resolve which provider to use.
+ *
+ * 1. An explicit `JEV_PROVIDER=openjev` or `JEV_PROVIDER=typesafe` wins.
+ * 2. Otherwise, if `TYPESAFE_API_KEY` is set → TypeSafe (unchanged default).
+ * 3. Otherwise, if only `OPENJEV_API_KEY` is set → OpenJEV.
+ * 4. Falls back to TypeSafe (the original default).
+ *
+ * Anyone with a TypeSafe key sees zero behaviour change.
+ */
+export function resolveProvider(
+  env: Readonly<Record<string, string | undefined>>,
+): JevProvider {
+  const explicit = env[PROVIDER_ENV]?.trim().toLowerCase();
+  if (explicit === "openjev") return "openjev";
+  if (explicit === "typesafe") return "typesafe";
+
+  if (env[API_KEY_ENV]?.trim()) return "typesafe";
+  if (env[OPENJEV_API_KEY_ENV]?.trim()) return "openjev";
+  return "typesafe";
+}
+
+/** Default base URL for a given provider. */
+export function providerBaseUrl(provider: JevProvider): string {
+  return provider === "openjev" ? OPENJEV_BASE_URL : DEFAULT_BASE_URL;
+}
+
+/** Default model id for a given provider. */
+export function providerModel(provider: JevProvider): string {
+  return provider === "openjev" ? OPENJEV_MODEL : DEFAULT_MODEL;
+}
+
+/** API key environment variable name for a given provider. */
+export function providerKeyEnv(provider: JevProvider): string {
+  return provider === "openjev" ? OPENJEV_API_KEY_ENV : API_KEY_ENV;
+}
+
 export function isNoulAnswer(answer: Answer | undefined): answer is NoulAnswer {
   return answer !== undefined && answer.type === "noul";
 }

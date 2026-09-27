@@ -10,6 +10,8 @@ npx @mrgoonie/skillful install
 
 You bring your own `TYPESAFE_API_KEY`. There is no server, no account, and nothing is collected.
 
+> **OpenJEV support:** Jev is built by [TypeSafe](https://typesafe.ai). This fork keeps TypeSafe as the default and adds optional support for [OpenJEV](https://openjev.sh), a free community gateway to the same Jev model — set `OPENJEV_API_KEY` (or `JEV_PROVIDER=openjev`) to use it. Original project: https://github.com/bestagentkits/jev-skillful by @mrgoonie.
+
 ## The problem
 
 The usual way to make an agent aware of a skill is to list every skill in the context window. This
@@ -133,7 +135,7 @@ npx @mrgoonie/skillful export-case --prompt "..."   # a redacted case to paste i
 ## Privacy
 
 - The prompt is sent to `api.typesafe.ai` as part of the routing request. This is the only kind of
-  network call Skillful makes.
+  network call Skillful makes. When OpenJEV is selected, the request goes to `api.openjev.sh` instead.
 - `SKILLFUL_UPLOAD_PROMPT=false` routes without transmitting the prompt. The shortlist is still
   chosen locally, so this trades retrieval quality for not sending the text.
 - Route decisions are cached in `~/.cache/skillful/routes.json` so a repeated prompt does not pay

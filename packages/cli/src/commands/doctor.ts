@@ -16,7 +16,7 @@ import { loadCache } from "../core/hooks/cache.js";
 import { renderInjection } from "../core/hooks/render.js";
 import { scanCatalog } from "../core/catalog/scan.js";
 import { route } from "../core/router/route.js";
-import { API_KEY_ENV } from "../core/jev/types.js";
+import { API_KEY_ENV, resolveProvider, providerKeyEnv } from "../core/jev/types.js";
 
 export interface DoctorCommandOptions {
   homeDir?: string;
@@ -57,14 +57,16 @@ export async function doctorCommand(options: DoctorCommandOptions = {}): Promise
       : "Hook is enabled.",
   });
 
-  const apiKey = env[API_KEY_ENV];
+  const provider = resolveProvider(env);
+  const keyEnv = providerKeyEnv(provider);
+  const apiKey = env[keyEnv];
   const hasKey = typeof apiKey === "string" && apiKey.trim().length > 0;
   checks.push({
     name: "api key",
     status: hasKey ? "ok" : "fail",
     detail: hasKey
-      ? `${API_KEY_ENV} is set.`
-      : `${API_KEY_ENV} is not set. Routing will degrade to a reminder until it is. Skillful reads the key only from the environment and never writes it to disk.`,
+      ? `${keyEnv} is set.`
+      : `${keyEnv} is not set. Routing will degrade to a reminder until it is. Skillful reads the key only from the environment and never writes it to disk.`,
   });
 
   const resolved = resolveForReport(env, homeDir);
